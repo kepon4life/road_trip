@@ -13,6 +13,9 @@
 
 ActiveRecord::Schema.define(version: 20140319054616) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "place_types", force: true do |t|
     t.string   "name"
     t.string   "icon"
