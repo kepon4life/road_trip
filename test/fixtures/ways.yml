@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  start_date: 2014-03-14
+  end_date: 2014-03-14
+  images: MyText
+  comments: MyText
+  distance: 1
+  coordinates: MyText
+
+two:
+  start_date: 2014-03-14
+  end_date: 2014-03-14
+  images: MyText
+  comments: MyText
+  distance: 1
+  coordinates: MyText
