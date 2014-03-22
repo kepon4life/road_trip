@@ -9,8 +9,9 @@
 <% content_for :javascript_includes do %>
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%= GOOGLE_MAP_API_KEY %>&sensor=true"></script>
 	<script type="text/javascript">
-    var array_of_place_first_level = <%= @places_first_level %>;
     var map;
+    var place_ids_on_the_map = new Array();
+    
     function initialize() {
       var mapOptions = {
         zoom: 4,
@@ -19,26 +20,45 @@
       }
       map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-      for (i = 0; i < array_of_place_first_level.length; i++) {
-        createMarker(array_of_place_first_level[i]);
-  
-      }
+      <% @places_first_level.each do |p| %>
+        
+        <% if p.children_places.exists? %>
+          var array_of_childs = new Array();
+          <% p.children_places.each do |c| %>
+            array_of_childs.push(new Array(<%= c.id %>, "<%= c.name %>", <%= c.lat %>, <%= c.lon %>, <%= c.place_type_id %>));
+          <% end %>
+          createMarker(<%= p.id %>, "<%= p.name %>", <%= p.lat %>, <%= p.lon %>, <%= p.place_type_id %>, array_of_childs);
+        <% else %>
+          createMarker(<%= p.id %>, "<%= p.name %>", <%= p.lat %>, <%= p.lon %>, <%= p.place_type_id %>);
+        <% end %>
+      <% end %>
+      
     }
-    function createMarker(datas){
-      var myLatLng = new google.maps.LatLng(datas[0], datas[1]);
-      var image = "maps_icons/"+datas[2]+".png";
-      var marker= new google.maps.Marker({
-          position: myLatLng, 
-          map: map,
-          icon: image
-      });
-      google.maps.event.addListener(marker, "click", function() {
-            alert(myLatLng);
-      });
+    function createMarker(id, name, lat, lon, img_name, children_places){
+      if(place_ids_on_the_map.indexOf(id) == -1){
+        var myLatLng = new google.maps.LatLng(lat, lon);
+        var image = "maps_icons/"+img_name+".png";
+        var marker= new google.maps.Marker({
+            position: myLatLng, 
+            map: map,
+            icon: image
+        });
+        google.maps.event.addListener(marker, "click", function() {
+              if(children_places==null){
+                alert("pas d'enfants");
+              }else{
+                alert("avec des enfants" + children_places);
+                for(i=0;i<children_places.length; i++){
+                  createMarker(children_places[i][0], children_places[i][1], children_places[i][2], children_places[i][3], children_places[i][4]);
+                }
+              }
+        });
+      }
+      place_ids_on_the_map.push(id);
     }
 
     google.maps.event.addDomListener(window, 'load', initialize);
-
+    
 	</script>
 <% end %>
 
