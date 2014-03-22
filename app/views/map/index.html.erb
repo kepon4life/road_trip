@@ -11,6 +11,7 @@
 	<script type="text/javascript">
     var map;
     var place_ids_on_the_map = new Array();
+    var markers = new Array();
     
     function initialize() {
       var mapOptions = {
@@ -21,7 +22,6 @@
       map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
       <% @places_first_level.each do |p| %>
-        
         <% if p.children_places.exists? %>
           var array_of_childs = new Array();
           <% p.children_places.each do |c| %>
@@ -34,6 +34,11 @@
       <% end %>
       
     }
+
+    function setDetailsContent(id){
+      alert("afficher les details de la place avec l'id : " + id);
+    }
+
     function createMarker(id, name, lat, lon, img_name, children_places){
       if(place_ids_on_the_map.indexOf(id) == -1){
         var myLatLng = new google.maps.LatLng(lat, lon);
@@ -44,17 +49,30 @@
             icon: image
         });
         google.maps.event.addListener(marker, "click", function() {
-              if(children_places==null){
-                alert("pas d'enfants");
-              }else{
-                alert("avec des enfants" + children_places);
+              //disable all pin's animations
+              for (var i = 0; i < markers.length; i++) {
+                if (markers[i].getAnimation() != null) {
+                  markers[i].setAnimation(null);
+                }
+              }
+
+              //annimate the pin
+              marker.setAnimation(google.maps.Animation.BOUNCE);
+              
+
+              //show children places
+              if(children_places!=null){
                 for(i=0;i<children_places.length; i++){
                   createMarker(children_places[i][0], children_places[i][1], children_places[i][2], children_places[i][3], children_places[i][4]);
                 }
               }
+
+              setDetailsContent(id);
         });
+        markers.push(marker);
+        place_ids_on_the_map.push(id);
       }
-      place_ids_on_the_map.push(id);
+      
     }
 
     google.maps.event.addDomListener(window, 'load', initialize);
