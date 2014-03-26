@@ -33,7 +33,7 @@ ActiveRecord::Schema.define(version: 20140319054616) do
     t.integer "rating"
     t.date    "start_date"
     t.date    "end_date"
-    t.text    "images"
+    t.string  "album_flickr_nb"
     t.text    "comments"
     t.integer "parent_place_id"
     t.integer "place_type_id"
@@ -44,9 +44,10 @@ ActiveRecord::Schema.define(version: 20140319054616) do
   end
 
   create_table "ways", force: true do |t|
+    t.string  "name"
     t.date    "start_date"
     t.date    "end_date"
-    t.text    "images"
+    t.string  "album_flickr_nb"
     t.text    "comments"
     t.integer "distance"
     t.text    "coordinates"

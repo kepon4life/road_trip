@@ -1,9 +1,10 @@
 class CreateWays < ActiveRecord::Migration
   def change
     create_table :ways do |t|
+      t.string :name
       t.date :start_date
       t.date :end_date
-      t.text :images
+      t.string :album_flickr_nb
       t.text :comments
       t.integer :distance
       t.text :coordinates

@@ -5,14 +5,24 @@
 		#map-canvas { height:550px; width:100%; top:10px; }
 		#map-details { height:auto; width:100%; }
 	</style>
+  <link href="/pace/themes/pace-theme-center-circle.css" rel="stylesheet" />
 <% end %>
 <% content_for :javascript_includes do %>
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%= GOOGLE_MAP_API_KEY %>&sensor=true"></script>
+  <script src="/pace/pace.min.js"></script>
+  <script type="text/javascript">
+    paceOptions = {
+      elements: false,
+      ajax: true,
+      restartOnRequestAfter: true
+    };
+  </script>
+  <script type="text/javascript" src="html5lightbox/html5lightbox.js"></script>
 	<script type="text/javascript">
     var map;
     var place_ids_on_the_map = new Array();
     var markers = new Array();
-    
+
     function initialize() {
       var mapOptions = {
         zoom: 4,
@@ -21,6 +31,8 @@
       }
       map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
+
+      //Create the markers
       <% @places_first_level.each do |p| %>
         <% if p.children_places.exists? %>
           var array_of_childs = new Array();
@@ -32,11 +44,119 @@
           createMarker(<%= p.id %>, "<%= p.name %>", <%= p.lat %>, <%= p.lon %>, <%= p.place_type_id %>);
         <% end %>
       <% end %>
+
+
+      //Create the roads
+      <% @ways.each do |w| %>
+        createRoad(<%= w.id %>, JSON.parse('<%= raw w.coordinates %>'))
+      <% end %>
       
     }
 
-    function setDetailsContent(id){
-      alert("afficher les details de la place avec l'id : " + id);
+    function getSetsImagesFromFlickrAPI(sets){
+
+      for(i=0;i<sets.length;i++){
+        $.ajax({
+
+          url : '/services/album/' + sets[i],
+          type : 'GET',
+          dataType : 'html',
+                 success : function(response){
+                  $("#images").append(response);
+                  $(".html5lightbox").html5lightbox();
+                 },
+                 error : function(result, statut, error){
+                 }
+        });  
+      }
+    }
+
+    function setDetailsContent(json, content_type){
+      var data;
+
+      if(content_type == "way"){
+        data = json;
+      }else{
+        data = json["place"];
+        var childrens = json["childrens"];
+      }
+
+
+      //name
+      var html = "<h3>"+data.name+"</h3>";
+
+      //comments
+      if(data.comments!=""){
+        html += "<span class='description'>"+data.comments+"</span>";
+      }
+
+      //website
+      if(content_type == "place" && data.website!=""){
+        html += "<span class='website'>"+data.website+"</span>";
+      }
+
+      //dates
+      var startDate = new Date(data.start_date);
+      var endDate = new Date(data.end_date);
+      if(data.start_date == data.end_date){
+        html += "<span class='date'>"+data.start_date+"</span>"
+      }else{
+        html += "<span class='date'>"+data.start_date+" - "+data.end_date+"</span>"
+      }
+
+
+      //images (parents)
+      var array_of_sets = new Array();
+      if(data.album_flickr_nb != ""){
+        array_of_sets.push(data.album_flickr_nb);
+      }
+      //images (childrens)
+      if(childrens!=null){
+        for(i=0;i<childrens.length;i++){
+          if(childrens[i].images != ""){
+            array_of_sets.push(childrens[i].album_flickr_nb);
+          }  
+        }
+        
+      }
+      html += "<div id='images'></div>";
+
+
+      getSetsImagesFromFlickrAPI(array_of_sets);
+
+      //clear div
+      $("#map-details").empty();
+
+      //append html
+      $("#map-details").append(html);
+
+    }
+
+
+    function createRoad(id, coordinates){
+      var roadPoints = [];
+      for(i=0;i<coordinates.points.length;i++){
+        //alert(coordinates.points[i].lon);
+        roadPoints[i] = new google.maps.LatLng(coordinates.points[i].lat, coordinates.points[i].lon);
+      }
+
+
+      var road = new google.maps.Polyline({
+        path: roadPoints,
+        geodesic: true,
+        strokeColor: 'red',
+        strokeOpacity: 0.6,
+        strokeWeight: 5,
+        map:map
+      });
+
+
+      google.maps.event.addListener(road, "click", function() {
+        $.getJSON('/services/way/' + id, function(json) { 
+          setDetailsContent(json, "way");
+        });
+      });
+
     }
 
     function createMarker(id, name, lat, lon, img_name, children_places){
@@ -67,7 +187,11 @@
                 }
               }
 
-              setDetailsContent(id);
+
+              $.getJSON('/services/place/' + id, function(json) { 
+                setDetailsContent(json, "place");
+              });
+              
         });
         markers.push(marker);
         place_ids_on_the_map.push(id);

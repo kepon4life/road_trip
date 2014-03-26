@@ -8,7 +8,7 @@ class CreatePlaces < ActiveRecord::Migration
       t.integer :rating
       t.date :start_date
       t.date :end_date
-      t.text :images
+      t.string :album_flickr_nb
       t.text :comments
       t.integer :parent_place_id
       t.integer :place_type_id

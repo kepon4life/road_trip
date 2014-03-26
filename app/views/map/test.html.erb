@@ -1,0 +1,82 @@
+<% content_for :stylesheet_includes do %>
+	<style type="text/css">
+		body{ background-color: black; }
+		.container { width:100%; padding:0;}
+		#map-canvas { height:550px; width:100%; top:10px; }
+		#map-details { height:auto; width:100%; }
+	</style>
+<% end %>
+<% content_for :javascript_includes do %>
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%= GOOGLE_MAP_API_KEY %>&sensor=true"></script>
+
+
+  <script type="text/javascript">
+    
+      function initialize() {
+      
+        var points = '{"points":';
+        points += "[";
+
+        var center = new google.maps.LatLng(24.7756,121.0062);
+        
+        var map = new google.maps.Map(document.getElementById('map-canvas'), {
+            center: center,
+            zoom: 13,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          });
+
+        var polyline = new google.maps.Polyline({
+          path: [],
+          strokeColor: '#0000FF',
+          strokeWeight: 5
+        });
+        
+        var bounds = new google.maps.LatLngBounds();
+        var directionsService = new google.maps.DirectionsService(); 
+        var request = { 
+          origin: new google.maps.LatLng(24.832701,120.954924), 
+          destination: new google.maps.LatLng(24.802864,120.971575), 
+          travelMode: google.maps.DirectionsTravelMode.DRIVING 
+        };
+        
+        directionsService.route(request, function(result, status) { 
+          if (status == google.maps.DirectionsStatus.OK) {
+            path = result.routes[0].overview_path;
+            
+            $(path).each(function(index, item) {
+
+              points += "{";
+              points += '"lat":';
+              points += item.k;
+              points += ",";
+              points += '"lon":';
+              points += item.A;
+              points += "}";
+              points += ",";
+              polyline.getPath().push(item);
+              bounds.extend(item);
+            })
+
+            points = points.substring(0, points.length - 1);
+
+            points += "]";
+            points += "}";
+
+            $("#textarea").val(points);
+
+            polyline.setMap(map);
+            map.fitBounds(bounds);
+          }
+        });
+      }
+          google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+<% end %>
+
+
+<div id="map-canvas"></div>
+<div id="map-details">
+
+<textarea id="textarea" name="textarea" rows="8" cols="230" style="margin:20px;"></textarea>
+
+</div>
