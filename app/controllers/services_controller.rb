@@ -35,15 +35,19 @@ class ServicesController < ApplicationController
 	end
 
 	def album
+		nb = 0
+		if params[:nb]
+			nb = params[:nb]
+		end
 		begin
 			html = ""		
-			photos = flickr.photosets.getPhotos(:photoset_id => params[:id],  :extras => 'media')
+			photos = flickr.photosets.getPhotos(:photoset_id => params[:id],  :extras => 'media', :per_page => nb)
 			photos.photo.each do |photo|
 				photo_size = flickr.photos.getSizes(:photo_id => photo.id)
 				if photo.media == "video"
-					html += "<a href='"+photo_size.size[10].source+"' class='html5lightbox' data-width='"+photo_size.size[10].width+"' data-height='"+photo_size.size[10].height+"' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-thumbnail'/></a>"
+					html += "<a href='"+photo_size.size[10].source+"' class='html5lightbox' data-width='"+photo_size.size[10].width+"' data-height='"+photo_size.size[10].height+"' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-rounded'/></a>"
 				else
-					html += "<a href='"+ApplicationHelper.make_flickr_url(photo, 'c')+"' class='html5lightbox' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-thumbnail'/></a>"
+					html += "<a href='"+ApplicationHelper.make_flickr_url(photo, 'c')+"' class='html5lightbox' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-rounded'/></a>"
 				end
 			end
 			render :text => html

@@ -1,14 +1,13 @@
-<script type="text/javascript" src="html5lightbox/html5lightbox.js"></script>
-<h1>Last photos</h1>
+<script type="text/javascript" src="/html5lightbox/html5lightbox.js"></script>
 <% @photos.each do |photo| %> 
 	<% if photo.media == "video" %>
 		<a href="<%= flickr.photos.getSizes(:photo_id => photo.id).size[10].source %>" class="html5lightbox" data-width="<%= flickr.photos.getSizes(:photo_id => photo.id).size[10].width %>" data-height="<%= flickr.photos.getSizes(:photo_id => photo.id).size[10].height %>" title="<%= photo.title %>"  data-group="mygroup">
-			<img src="<%= make_flickr_url(photo, 's') %>"  class="img-thumbnail"/>
+			<img src="<%= make_flickr_url(photo, 's') %>"  class="img-rounded"/>
 		</a>
 		
 	<% else %>
 		<a href="<%= make_flickr_url(photo, 'c') %>" class="html5lightbox" title="<%= photo.title %>"  data-group="mygroup">
-			<img src="<%= make_flickr_url(photo, 's') %>"  class="img-thumbnail"/>
+			<img src="<%= make_flickr_url(photo, 's') %>"  class="img-rounded"/>
 		</a>
 	<% end %>
 <% end %>

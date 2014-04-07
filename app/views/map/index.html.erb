@@ -1,15 +1,19 @@
+<% @title="Map" %>
+
 <% content_for :stylesheet_includes do %>
 	<style type="text/css">
-		body{ background-color: black; }
 		.container { width:100%; padding:0;}
 		#map-canvas { height:550px; width:100%; top:10px; }
 		#map-details { height:auto; width:100%; }
+    span.plus{background:url(assets/plus.png) left top; width:75px; height:75px; display: inline-block; text-indent: -9999px; padding-top: 27px;}
+    span.plus:hover{background:url(assets/plus_h.png) left top;}
+    img { margin:5px; }
 	</style>
   <link href="/pace/themes/pace-theme-center-circle.css" rel="stylesheet" />
 <% end %>
 <% content_for :javascript_includes do %>
-	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%= GOOGLE_MAP_API_KEY %>&sensor=true"></script>
-  <script src="/pace/pace.min.js"></script>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%= GOOGLE_MAP_API_KEY %>&sensor=true"></script>
+  <script type="text/javascript" src="/pace/pace.min.js"></script>
   <script type="text/javascript">
     paceOptions = {
       elements: false,
@@ -22,8 +26,14 @@
     var map;
     var place_ids_on_the_map = new Array();
     var markers = new Array();
+    var roads = new Array();
+    var defaultStrokeOpacity = 0.6;
+    var selectedStrokeOpacity = 1;
+    var dateFormatString = "d MMMM yyyy";
+
 
     function initialize() {
+
       var mapOptions = {
         zoom: 4,
         center: new google.maps.LatLng(0,0),
@@ -53,25 +63,25 @@
       
     }
 
-    function getSetsImagesFromFlickrAPI(sets){
-
-      for(i=0;i<sets.length;i++){
-        $.ajax({
-
-          url : '/services/album/' + sets[i],
+    function getSetsImagesFromFlickrAPI(place_id, set){
+      var nb_imb_to_load = 6;
+      $.ajax({
+          url : '/services/album/' + set + '/' + nb_imb_to_load,
           type : 'GET',
           dataType : 'html',
-                 success : function(response){
-                  $("#images").append(response);
-                  $(".html5lightbox").html5lightbox();
-                 },
-                 error : function(result, statut, error){
-                 }
-        });  
-      }
+          success : function(response){
+            $("#images").append(response);
+            $(".html5lightbox").html5lightbox();
+            $("#images").append("<a href='/photos/place/"+place_id+"'><span class='plus'>Plus</span></a>");
+          }
+        });
+    
     }
 
     function setDetailsContent(json, content_type){
+      //clear div
+      $("#map-details").empty();
+
       var data;
 
       if(content_type == "way"){
@@ -85,6 +95,17 @@
       //name
       var html = "<h3>"+data.name+"</h3>";
 
+      //rating
+      if(content_type != "way"){
+        var $raty = $('div#raty');
+        $raty.show();
+        $raty.raty({ readOnly: true, score: data.rating, path: '/assets' });
+        html += $raty.html();
+        $("#map-details").next('div#raty').hide();
+      }else{
+        $('div#raty').hide();
+      }
+
       //comments
       if(data.comments!=""){
         html += "<span class='description'>"+data.comments+"</span>";
@@ -92,44 +113,42 @@
 
       //website
       if(content_type == "place" && data.website!=""){
-        html += "<span class='website'>"+data.website+"</span>";
+        html += "<span class='website'>(<a href='"+data.website+"' target='_blank'>Website</a>)</span>";
       }
 
       //dates
       var startDate = new Date(data.start_date);
       var endDate = new Date(data.end_date);
       if(data.start_date == data.end_date){
-        html += "<span class='date'>"+data.start_date+"</span>"
+        html += "<span class='date'>"+startDate.toString(dateFormatString)+"</span>"
       }else{
-        html += "<span class='date'>"+data.start_date+" - "+data.end_date+"</span>"
+        html += "<span class='date'>"+startDate.toString(dateFormatString)+" - "+endDate.toString(dateFormatString)+"</span>"
       }
 
 
-      //images (parents)
-      var array_of_sets = new Array();
-      if(data.album_flickr_nb != ""){
-        array_of_sets.push(data.album_flickr_nb);
-      }
-      //images (childrens)
-      if(childrens!=null){
-        for(i=0;i<childrens.length;i++){
-          if(childrens[i].images != ""){
-            array_of_sets.push(childrens[i].album_flickr_nb);
-          }  
-        }
-        
-      }
+      
       html += "<div id='images'></div>";
 
 
-      getSetsImagesFromFlickrAPI(array_of_sets);
-
-      //clear div
-      $("#map-details").empty();
+      getSetsImagesFromFlickrAPI(data.id, data.album_flickr_nb);
 
       //append html
       $("#map-details").append(html);
 
+    }
+
+    function disableAllMarkersAndRoadAnimation(){
+      //disable all pin's animations
+      for (var i = 0; i < markers.length; i++) {
+        if (markers[i].getAnimation() != null) {
+          markers[i].setAnimation(null);
+        }
+      }
+
+      //disable all road's animations
+      for (var i = 0; i < roads.length; i++) {
+        roads[i].setOptions({strokeOpacity: defaultStrokeOpacity});
+      }
     }
 
 
@@ -140,24 +159,41 @@
         roadPoints[i] = new google.maps.LatLng(coordinates.points[i].lat, coordinates.points[i].lon);
       }
 
+      //arrow
+      var lineSymbol = {
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+      };
+
 
       var road = new google.maps.Polyline({
         path: roadPoints,
         geodesic: true,
         strokeColor: 'red',
-        strokeOpacity: 0.6,
+        strokeOpacity: defaultStrokeOpacity,
         strokeWeight: 5,
+        icons: [{icon: lineSymbol, offset: '100%'}],
         map:map
       });
 
 
       google.maps.event.addListener(road, "click", function() {
+
+        //disable markers and road's animations
+        disableAllMarkersAndRoadAnimation();
+
+        //annimate the road
+        road.setOptions({strokeOpacity: selectedStrokeOpacity});
+
+
         $.getJSON('/services/way/' + id, function(json) { 
           setDetailsContent(json, "way");
         });
       });
 
+      roads.push(road);
+
     }
+
 
     function createMarker(id, name, lat, lon, img_name, children_places){
       if(place_ids_on_the_map.indexOf(id) == -1){
@@ -168,13 +204,10 @@
             map: map,
             icon: image
         });
+
         google.maps.event.addListener(marker, "click", function() {
-              //disable all pin's animations
-              for (var i = 0; i < markers.length; i++) {
-                if (markers[i].getAnimation() != null) {
-                  markers[i].setAnimation(null);
-                }
-              }
+              //disable markers and road's animations
+              disableAllMarkersAndRoadAnimation();
 
               //annimate the pin
               marker.setAnimation(google.maps.Animation.BOUNCE);
@@ -207,3 +240,4 @@
 
 <div id="map-canvas"></div>
 <div id="map-details"></div>
+<div id='raty'></div>

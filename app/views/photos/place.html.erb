@@ -1,0 +1,17 @@
+<% @title = @place.name %>
+
+<h1><%= @place.name %></h1>
+
+<%= render :partial => 'album', :object => @photos %>
+
+<h2>Related albums</h2>
+<ul>
+<% if(@place.parent_place != nil)%>
+	<li><a href="/photos/place/<%= place.id %>"><span style="clear:left;"><%= @place.parent_place.name %></span></a></li>
+<% end %>
+<% if(@place.children_places.exists?)%>
+	<% @place.children_places.each do |children| %>
+		<li><a href="/photos/place/<%= children.id %>"><span style="clear:left;"><%= children.name %></span></a></li>
+	<% end %>
+<% end %>
+</ul>

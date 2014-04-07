@@ -3,14 +3,13 @@ RoadTrip::Application.routes.draw do
   
   get "map/index"
   root :to => 'map#index'
-  get 'last' => 'photos#index'
-
+  get 'photos/last' => 'photos#last'
+  get 'photos/place/:id' => 'photos#place'
   get 'map/test' => 'map#test'
-
   get 'services/way/:id' => 'services#way'
   get 'services/place/:id' => 'services#place'
   get 'services/photo/:id' => 'services#photo'
-  get 'services/album/:id' => 'services#album'
+  get 'services/album/:id(/:nb)' => 'services#album'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
