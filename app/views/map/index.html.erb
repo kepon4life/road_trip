@@ -4,10 +4,20 @@
 	<style type="text/css">
 		.container { width:100%; padding:0;}
 		#map-canvas { height:550px; width:100%; top:10px; }
-		#map-details { height:auto; width:100%; }
-    span.plus{background:url(assets/plus.png) left top; width:75px; height:75px; display: inline-block; text-indent: -9999px; padding-top: 27px;}
-    span.plus:hover{background:url(assets/plus_h.png) left top;}
-    img { margin:5px; }
+		#map-details { height:auto; width:100%; margin-top:50px; margin:0; padding:15px 0 0 0; vertical-align: bottom;}
+    span.plus{background:url("/assets/plus.png") left top; width:75px; height:75px; display:inline-block; text-indent:-9999px; padding-top:27px;}
+    span.plus:hover{background:url("/assets/plus_h.png") left top;}
+    img { margin-left:5px; margin-right:5px; }
+    dl{ margin-bottom:2px; }
+    dt, dd { text-align: left; }
+    dl.name, dl.website, dl.date, dl.rating, dl.transportation, dl.distance { min-width:25%; }
+    dl.name { float:left; display:inline-block; padding:0; margin:0; }
+    dl.distance { float:left; display:inline-block; padding:0; margin:0; }
+    dl.website { float:left; display:inline-block; padding:0; margin:0; }
+    dl.date { float:left; display:inline-block; text-align:center;}
+    dl.rating { float:left; display:block; text-align:right;}
+    dl.transportation { float:left; display:block; text-align:right;}
+    dl.description { display:block; }
 	</style>
   <link href="/pace/themes/pace-theme-center-circle.css" rel="stylesheet" />
 <% end %>
@@ -36,7 +46,7 @@
 
       var mapOptions = {
         zoom: 4,
-        center: new google.maps.LatLng(0,0),
+        center: new google.maps.LatLng(37.6,-95.695),
         mapTypeId: google.maps.MapTypeId.HYBRID
       }
       map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
@@ -64,7 +74,7 @@
     }
 
     function getSetsImagesFromFlickrAPI(place_id, set){
-      var nb_imb_to_load = 6;
+      var nb_imb_to_load = 16;
       $.ajax({
           url : '/services/album/' + set + '/' + nb_imb_to_load,
           type : 'GET',
@@ -72,7 +82,9 @@
           success : function(response){
             $("#images").append(response);
             $(".html5lightbox").html5lightbox();
-            $("#images").append("<a href='/photos/place/"+place_id+"'><span class='plus'>Plus</span></a>");
+            if($("#images a").length == 16){
+              $("#images").append("<a data-no-turbolink='true' href='/photos/place/"+place_id+"'><span class='plus'>Plus</span></a>");
+            }
           }
         });
     
@@ -86,48 +98,86 @@
 
       if(content_type == "way"){
         data = json;
+        $("#map-details").removeClass("place");
+        $("#map-details").addClass("way");
       }else{
         data = json["place"];
         var childrens = json["childrens"];
+        $("#map-details").removeClass("way");
+        $("#map-details").addClass("place");
       }
 
+      var html = "<dl class='name'>";
 
-      //name
-      var html = "<h3>"+data.name+"</h3>";
+      if(content_type == "way"){
+        html += "<dt>Way : </dt>";
+      }else{
+        html += "<dt>Place : </dt>";
+      }
+      html += "<dd>"+data.name+"</dd></dl>";
+
+
+      if(content_type == "way"){
+        //distance
+        html += "<dl class='distance'><dt>Distance : </dt><dd>"+data.distance+" km</dd></dl>";
+      }else{
+        //website
+        var website_url = data.website;
+        if(website_url.length > 20){
+          website_url = data.website.substring(0,20) + "...";
+        }
+        html += "<dl class='website'><dt>Website : </dt><dd><a href='"+data.website+"' target='_blank'>"+website_url+"</a></dd></dl>";
+      }
+      
+      
+
+      //dates
+      var startDate = new Date(data.start_date);
+      var endDate = new Date(data.end_date);
+      html += "<dl class='date'><dt>Date(s) : </dt>";
+      if(data.start_date == data.end_date){
+        html += "<dd>"+startDate.toString(dateFormatString)+"</dd>";
+      }else{
+        html += "<dd>"+startDate.toString(dateFormatString)+" - "+endDate.toString(dateFormatString)+"</dd>";
+      }
+      html += "</dl>";
 
       //rating
       if(content_type != "way"){
+        html += "<dl class='rating'>";
+        html += "<dt>Rating : </dt><dd>";
         var $raty = $('div#raty');
         $raty.show();
         $raty.raty({ readOnly: true, score: data.rating, path: '/assets' });
         html += $raty.html();
         $("#map-details").next('div#raty').hide();
+        html += "</dd>";
+        html += "</dl>";
       }else{
         $('div#raty').hide();
       }
 
+      //Transportation
+      if(content_type == "way"){
+        html += "<dl class='transportation'>";
+        html += "<dt>Transportation : </dt><dd>";
+        html += data.transportation.name
+        html += "</dd>";
+        html += "</dl>";
+      }
+
+
       //comments
+      html += "<dl class='description'><dt>Comments : </dt>";
       if(data.comments!=""){
-        html += "<span class='description'>"+data.comments+"</span>";
-      }
-
-      //website
-      if(content_type == "place" && data.website!=""){
-        html += "<span class='website'>(<a href='"+data.website+"' target='_blank'>Website</a>)</span>";
-      }
-
-      //dates
-      var startDate = new Date(data.start_date);
-      var endDate = new Date(data.end_date);
-      if(data.start_date == data.end_date){
-        html += "<span class='date'>"+startDate.toString(dateFormatString)+"</span>"
+        html += "<dd>"+data.comments+"</dd>";
       }else{
-        html += "<span class='date'>"+startDate.toString(dateFormatString)+" - "+endDate.toString(dateFormatString)+"</span>"
+        html += "<dd>-</dd>";
       }
-
+      html += "</dl>";
 
       
-      html += "<div id='images'></div>";
+      html += "<dl><dt>Images : </dt><dd><div id='images'></div></dd></dl>";
 
 
       getSetsImagesFromFlickrAPI(data.id, data.album_flickr_nb);
@@ -171,7 +221,6 @@
         strokeColor: 'red',
         strokeOpacity: defaultStrokeOpacity,
         strokeWeight: 5,
-        icons: [{icon: lineSymbol, offset: '100%'}],
         map:map
       });
 
@@ -219,6 +268,10 @@
                   createMarker(children_places[i][0], children_places[i][1], children_places[i][2], children_places[i][3], children_places[i][4]);
                 }
               }
+
+              //center map
+              map.setCenter(marker.getPosition());
+              map.setZoom(12);
 
 
               $.getJSON('/services/place/' + id, function(json) { 

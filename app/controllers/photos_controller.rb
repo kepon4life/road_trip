@@ -6,11 +6,11 @@ class PhotosController < ApplicationController
 	end
 
 	def place
+		@photos = Array.new
 		@place = Place.find(params[:id])
-
-		@photos = flickr.photosets.getPhotos(:photoset_id => @place.album_flickr_nb,  :extras => 'media').photo
-
-
+		if @place.album_flickr_nb != ""
+			@photos = flickr.photosets.getPhotos(:photoset_id => @place.album_flickr_nb,  :extras => 'media').photo
+		end
 	end
 
 end

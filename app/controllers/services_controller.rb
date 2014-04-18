@@ -25,12 +25,21 @@ class ServicesController < ApplicationController
 			photo = flickr.photos.getInfo(:photo_id => params[:id])
 			photo_size = flickr.photos.getSizes(:photo_id => photo.id)
 			if photo.media == "video"
-				render :text => "<a href='"+photo_size.size[10].source+"' class='html5lightbox' data-width='"+photo_size.size[10].width+"' data-height='"+photo_size.size[10].height+"' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-thumbnail'/></a>"
+				render :text => "<a href='"+photo_size.size[10].source+"' class='html5lightbox' data-width='"+photo_size.size[10].width+"' data-height='"+photo_size.size[10].height+"' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-thumbnail'/><img src='/assets/video.png' style='position:absolute; margin-left:-80px;' /></a>"
 			else
 				render :text => "<a href='"+ApplicationHelper.make_flickr_url(photo, 'c')+"' class='html5lightbox' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-thumbnail'/></a>"
 			end
 		rescue FlickRaw::FailedResponse => e
-			render :text => "Fail to get the image"
+			render :text => "No images"
+		end
+	end
+
+	def original
+		begin
+			photo = flickr.photos.getSizes(:photo_id => params[:id])
+			redirect_to photo[11].source
+		rescue FlickRaw::FailedResponse => e
+			render :text => "Fail to get the original image"
 		end
 	end
 
@@ -45,14 +54,15 @@ class ServicesController < ApplicationController
 			photos.photo.each do |photo|
 				photo_size = flickr.photos.getSizes(:photo_id => photo.id)
 				if photo.media == "video"
-					html += "<a href='"+photo_size.size[10].source+"' class='html5lightbox' data-width='"+photo_size.size[10].width+"' data-height='"+photo_size.size[10].height+"' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-rounded'/></a>"
+					html += "<a href='"+photo_size.size[10].source+"' class='html5lightbox' data-width='"+photo_size.size[10].width+"' data-height='"+photo_size.size[10].height+"' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-rounded'/><img src='/assets/video.png' style='position:absolute; margin-left:-80px;' /></a>"
 				else
-					html += "<a href='"+ApplicationHelper.make_flickr_url(photo, 'c')+"' class='html5lightbox' title='"+photo.title+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-rounded'/></a>"
+					original_link = '<a target="_blank" href="/services/original/'+photo.id+'">Download the original</a>'
+					html += "<a href='"+ApplicationHelper.make_flickr_url(photo, 'c')+"' class='html5lightbox' title='"+original_link+"' data-group='myGroup'><img src='"+ ApplicationHelper.make_flickr_url(photo, 's') +"' class='img-rounded'/></a>"
 				end
 			end
 			render :text => html
 		rescue FlickRaw::FailedResponse => e
-			render :text => "Fail to get the images"
+			render :text => "No images"
 		end
 	end
 end

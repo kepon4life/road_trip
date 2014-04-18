@@ -9,6 +9,7 @@ RoadTrip::Application.routes.draw do
   get 'services/way/:id' => 'services#way'
   get 'services/place/:id' => 'services#place'
   get 'services/photo/:id' => 'services#photo'
+  get 'services/original/:id' => 'services#original'
   get 'services/album/:id(/:nb)' => 'services#album'
 
   # The priority is based upon order of creation: first created -> highest priority.
