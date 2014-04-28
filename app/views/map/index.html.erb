@@ -152,7 +152,7 @@
         html += "<dt>Rating : </dt><dd>";
         var $raty = $('div#raty');
         $raty.show();
-        $raty.raty({ readOnly: true, score: data.rating, path: '/public/raty_img' });
+        $raty.raty({ readOnly: true, score: data.rating, path: '/raty_img' });
         html += $raty.html();
         $("#map-details").next('div#raty').hide();
         html += "</dd>";
