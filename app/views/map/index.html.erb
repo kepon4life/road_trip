@@ -68,7 +68,7 @@
 
       //Create the roads
       <% @ways.each do |w| %>
-        createRoad(<%= w.id %>, JSON.parse('<%= raw w.coordinates %>'))
+        createRoad(<%= w.id %>, JSON.parse('<%= raw w.coordinates %>'), '<%= w.name %>')
       <% end %>
       
     }
@@ -206,10 +206,9 @@
     }
 
 
-    function createRoad(id, coordinates){
+    function createRoad(id, coordinates, name){
       var roadPoints = [];
       for(i=0;i<coordinates.points.length;i++){
-        //alert(coordinates.points[i].lon);
         roadPoints[i] = new google.maps.LatLng(coordinates.points[i].lat, coordinates.points[i].lon);
       }
 
@@ -227,6 +226,24 @@
         strokeWeight: 5,
         map:map
       });
+      
+      var middleOfTheRoadLatLng = new google.maps.LatLng(coordinates.points[Math.round(coordinates.points.length/2)].lat, coordinates.points[Math.round(coordinates.points.length/2)].lon);
+
+      var infoWindowRoad = new google.maps.InfoWindow({ 
+            position : middleOfTheRoadLatLng,
+            content: name,
+            size : new google.maps.Size(50,50),
+            disableAutoPan : true
+          });
+
+
+        google.maps.event.addListener(road, "mouseover", function(){
+            infoWindowRoad.open(map);
+        });
+
+        google.maps.event.addListener(road, "mouseout", function(){
+            infoWindowRoad.close(map);
+        });
 
 
       google.maps.event.addListener(road, "click", function() {
@@ -244,7 +261,6 @@
       });
 
       roads.push(road);
-
     }
 
 
@@ -256,6 +272,20 @@
             position: myLatLng, 
             map: map,
             icon: image
+        });
+
+        var infoWindowMarker = new google.maps.InfoWindow({ 
+            content : name,
+            size : new google.maps.Size(50,50),
+            disableAutoPan : true
+          });
+
+        google.maps.event.addListener(marker, "mouseover", function(){
+            infoWindowMarker.open(map,marker);
+        });
+
+        google.maps.event.addListener(marker, "mouseout", function(){
+            infoWindowMarker.close(map,marker);
         });
 
         google.maps.event.addListener(marker, "click", function() {
