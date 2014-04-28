@@ -13,4 +13,12 @@ class PhotosController < ApplicationController
 		end
 	end
 
+	def way
+		@photos = Array.new
+		@way = Way.find(params[:id])
+		if @way.album_flickr_nb != ""
+			@photos = flickr.photosets.getPhotos(:photoset_id => @way.album_flickr_nb,  :extras => 'media').photo
+		end
+	end
+
 end

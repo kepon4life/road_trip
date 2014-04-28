@@ -73,7 +73,7 @@
       
     }
 
-    function getSetsImagesFromFlickrAPI(place_id, set){
+    function getSetsImagesFromFlickrAPI(place_id, set, content_type){
       var nb_imb_to_load = 16;
       $.ajax({
           url : '/services/album/' + set + '/' + nb_imb_to_load,
@@ -83,7 +83,11 @@
             $("#images").append(response);
             $(".html5lightbox").html5lightbox();
             if($("#images a").length == 16){
-              $("#images").append("<a data-no-turbolink='true' href='/photos/place/"+place_id+"'><span class='plus'>Plus</span></a>");
+              if(content_type == "way"){
+                $("#images").append("<a data-no-turbolink='true' href='/photos/way/"+place_id+"'><span class='plus'>Plus</span></a>");
+              }else{
+                $("#images").append("<a data-no-turbolink='true' href='/photos/place/"+place_id+"'><span class='plus'>Plus</span></a>");
+              }
             }
           }
         });
@@ -180,7 +184,7 @@
       html += "<dl><dt>Images : </dt><dd><div id='images'></div></dd></dl>";
 
 
-      getSetsImagesFromFlickrAPI(data.id, data.album_flickr_nb);
+      getSetsImagesFromFlickrAPI(data.id, data.album_flickr_nb, content_type);
 
       //append html
       $("#map-details").append(html);
