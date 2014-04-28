@@ -11,7 +11,7 @@
 			 %>
 			<a href="<%= photo_size.source %>" class="html5lightbox" data-width="<%= photo_size.width %>" data-height="<%= photo_size.height %>" title="<a target='_blank' href='/services/original/<%= photo.id %>'>Download the original</a>"  data-group="mygroup">
 				<img src="<%= make_flickr_url(photo, 's') %>"  class="img-rounded"/>
-				<img src="/assets/video.png" style="position:absolute; margin-left:-80px;" />
+				<img src="<%= asset_path('video.png') %>" style="position:absolute; margin-left:-80px;" />
 			</a>
 			<script type="text/javascript">
 					console.log("<%= flickr.photos.getSizes(:photo_id => photo.id).size[10].source %>");
