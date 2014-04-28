@@ -275,7 +275,10 @@
 
               //center map
               map.setCenter(marker.getPosition());
-              map.setZoom(12);
+
+              if(map.getZoom() < 12){
+                map.setZoom(12);
+              }
 
 
               $.getJSON('/services/place/' + id, function(json) { 
