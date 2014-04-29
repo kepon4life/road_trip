@@ -111,7 +111,9 @@
                 $("#images").append("<a data-no-turbolink='true' href='/photos/place/"+place_id+"'><span class='plus'>Plus</span></a>");
               }
             }
-          }
+          },error: function(){
+            alert("Problem during loading. Try again!");
+         }
         });
     
     }
