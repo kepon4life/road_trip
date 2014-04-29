@@ -3,11 +3,13 @@
 <% content_for :stylesheet_includes do %>
 	<style type="text/css">
 		.container { width:100%; padding:0;}
-		#map-canvas { height:550px; width:100%; top:10px; }
-		#map-details { height:auto; width:100%; margin-top:50px; margin:0; padding:15px 0 0 0; vertical-align: bottom;}
+		#map-canvas { height:550px; width:100%; top:0px; }
+    #map-details { height:auto; width:100%; margin-top:50px; margin:0; padding:15px 0 0 0; vertical-align: bottom;}
+    img { margin-left:5px; margin-right:5px; }
+
     span.plus{background:url("<%= asset_path('plus.png') %>") left top; width:75px; height:75px; display:inline-block; text-indent:-9999px; padding-top:27px;}
     span.plus:hover{background:url("<%= asset_path('plus_h.png') %>") left top;}
-    img { margin-left:5px; margin-right:5px; }
+
     dl{ margin-bottom:2px; }
     dt, dd { text-align: left; }
     dl.name, dl.website, dl.date, dl.rating, dl.transportation, dl.distance { min-width:25%; }
@@ -18,6 +20,23 @@
     dl.rating { float:left; display:block; text-align:right;}
     dl.transportation { float:left; display:block; text-align:right;}
     dl.description { display:block; }
+
+    @media screen and (max-width: 500px){
+      #map-canvas { height:250px; }
+      img { margin: 1px; }
+      dl.date, dl.website, dl.distance, dl.name, dl.rating, dl.description, dl.transportation { display:block; float:none; }
+      dt {float:left;}
+      dt,dd {width:50%; float:left;}
+      dl.pics dt {float:none;}
+      dl.pics dt, dl.pics dd {width:100%;}
+      .img-rounded { border-radius: 2px; width:35px;}
+      span.plus { width:35px; height:35px; padding-top: 7px; background:url("<%= asset_path('plus_s.png') %>") }
+      span.plus:hover { background:url("<%= asset_path('plus_h_s.png') %>") }
+      
+
+    }
+
+
 	</style>
   <link href="/pace/themes/pace-theme-center-circle.css" rel="stylesheet" />
 <% end %>
@@ -74,7 +93,7 @@
     }
 
     function getSetsImagesFromFlickrAPI(place_id, set, content_type){
-      var nb_imb_to_load = 16;
+      var nb_imb_to_load = 15;
       $.ajax({
           url : '/services/album/' + set + '/' + nb_imb_to_load,
           type : 'GET',
@@ -82,7 +101,7 @@
           success : function(response){
             $("#images").append(response);
             $(".html5lightbox").html5lightbox();
-            if($("#images a").length == 16){
+            if($("#images a").length == 15){
               if(content_type == "way"){
                 $("#images").append("<a data-no-turbolink='true' href='/photos/way/"+place_id+"'><span class='plus'>Plus</span></a>");
               }else{
@@ -130,7 +149,10 @@
         if(website_url.length > 20){
           website_url = data.website.substring(0,20) + "...";
         }
-        html += "<dl class='website'><dt>Website : </dt><dd><a href='"+data.website+"' target='_blank'>"+website_url+"</a></dd></dl>";
+
+        if(website_url.length > 0){
+          html += "<dl class='website'><dt>Website : </dt><dd><a href='"+data.website+"' target='_blank'>"+website_url+"</a></dd></dl>";
+        }
       }
       
       
@@ -181,7 +203,7 @@
       html += "</dl>";
 
       
-      html += "<dl><dt>Images : </dt><dd><div id='images'></div></dd></dl>";
+      html += "<dl class='pics'><dt>Images : </dt><dd><div id='images'></div></dd></dl>";
 
 
       getSetsImagesFromFlickrAPI(data.id, data.album_flickr_nb, content_type);
