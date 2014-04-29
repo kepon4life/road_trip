@@ -1,4 +1,14 @@
 <script type="text/javascript" src="/html5lightbox/html5lightbox.js"></script>
+<% content_for :stylesheet_includes do %>
+	<style type="text/css">
+	img { margin:5px; }
+	
+	@media screen and (max-width: 500px){
+      img { margin: 1px; }
+      .img-rounded { border-radius: 2px; width:35px;}
+    }
+	</style>
+<% end %>
 <% if ! @photos.empty? %>
 	<% @photos.each do |photo| %> 
 		<% if photo.media == "video" %>
