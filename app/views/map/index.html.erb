@@ -101,6 +101,7 @@
           url : '/services/album/' + set + '/' + nb_imb_to_load,
           type : 'GET',
           dataType : 'html',
+          timeout: 10000000000000,
           success : function(response){
             $("#images").append(response);
             $(".html5lightbox").html5lightbox();
