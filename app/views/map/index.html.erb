@@ -3,7 +3,7 @@
 <% content_for :stylesheet_includes do %>
 	<style type="text/css">
 		.container { width:100%; padding:0;}
-		#map-canvas { height:550px; width:100%; top:0px; }
+		#map-canvas { height:550px; width:100%; top:0px; z-index: 10000; }
     #map-details { height:auto; width:100%; margin-top:50px; margin:0; padding:15px 0 0 0; vertical-align: bottom;}
     img { margin:5px; }
     span.plus{background:url("<%= asset_path('plus.png') %>") left top; width:75px; height:75px; display:inline-block; text-indent:-9999px; padding-top:27px;}
