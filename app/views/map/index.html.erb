@@ -5,11 +5,9 @@
 		.container { width:100%; padding:0;}
 		#map-canvas { height:550px; width:100%; top:0px; }
     #map-details { height:auto; width:100%; margin-top:50px; margin:0; padding:15px 0 0 0; vertical-align: bottom;}
-    img { margin-left:5px; margin-right:5px; }
-
+    img { margin:5px; }
     span.plus{background:url("<%= asset_path('plus.png') %>") left top; width:75px; height:75px; display:inline-block; text-indent:-9999px; padding-top:27px;}
     span.plus:hover{background:url("<%= asset_path('plus_h.png') %>") left top;}
-
     dl{ margin-bottom:2px; }
     dt, dd { text-align: left; }
     dl.name, dl.website, dl.date, dl.rating, dl.transportation, dl.distance { min-width:25%; }
@@ -32,11 +30,13 @@
       .img-rounded { border-radius: 2px; width:35px;}
       span.plus { width:35px; height:35px; padding-top: 7px; background:url("<%= asset_path('plus_s.png') %>") }
       span.plus:hover { background:url("<%= asset_path('plus_h_s.png') %>") }
-      
-
     }
 
+    @media screen and (max-width: 500px) and (orientation:landscape) {
+      #map-canvas { height:180px; width:60%; float:left; }
+      #map-details { height:180px; width:40%; float:left; padding-left:2px;}
 
+    }
 	</style>
   <link href="/pace/themes/pace-theme-center-circle.css" rel="stylesheet" />
 <% end %>
