@@ -63,8 +63,16 @@
 
     function initialize() {
 
+      var zoom;
+
+      if (screen.width < 500) {
+        zoom = 3;
+      }else{
+        zoom = 4;
+      }
+
       var mapOptions = {
-        zoom: 4,
+        zoom: zoom,
         center: new google.maps.LatLng(37.6,-95.695),
         mapTypeId: google.maps.MapTypeId.HYBRID
       }
