@@ -24,7 +24,7 @@ gem 'jquery-rails'
 gem 'turbolinks'
 
 # Flickraw to access to flickr API
-gem 'flickraw'
+gem 'flickraw', '~> 0.9.8'
 
 # Rails Admin
 gem 'rails_admin'
